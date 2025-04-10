@@ -4,6 +4,9 @@ node_modules/
 # Build output
 dist/
 
+# rules
+.cursor/
+
 # Environment variables and secrets
 .env
 .env.local
