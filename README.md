@@ -1,4 +1,5 @@
 # Directus MCP Server
+[![smithery badge](https://smithery.ai/badge/@pixelsock/directus-mcp)](https://smithery.ai/server/@pixelsock/directus-mcp)
 
 An MCP (Model Context Protocol) server for interacting with the Directus CMS API.
 
@@ -15,6 +16,15 @@ An MCP (Model Context Protocol) server for interacting with the Directus CMS API
 
 ## Installation
 
+### Installing via Smithery
+
+To install directus-mcp for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@pixelsock/directus-mcp):
+
+```bash
+npx -y @smithery/cli install @pixelsock/directus-mcp --client claude
+```
+
+### Manual Installation
 ```bash
 # Clone the repository
 git clone https://github.com/pixelsock/mcp-servers.git
