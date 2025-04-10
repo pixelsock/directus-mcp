@@ -9,7 +9,15 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Try to load config from file, or use fallback defaults for development
+/**
+ * Configuration loading with precedence:
+ * 1. Environment variables
+ * 2. MCP arguments
+ * 3. config.json file
+ * 4. Default values
+ */
+
+// Default configuration
 let CONFIG = {
   DIRECTUS_URL: "https://example.com",
   DIRECTUS_ACCESS_TOKEN: "default-token-for-dev",
@@ -17,6 +25,35 @@ let CONFIG = {
   DIRECTUS_PASSWORD: "default-password-for-dev"
 };
 
+// Load environment variables if present
+if (process.env.DIRECTUS_URL) {
+  CONFIG.DIRECTUS_URL = process.env.DIRECTUS_URL;
+}
+if (process.env.DIRECTUS_ACCESS_TOKEN) {
+  CONFIG.DIRECTUS_ACCESS_TOKEN = process.env.DIRECTUS_ACCESS_TOKEN;
+}
+if (process.env.DIRECTUS_EMAIL) {
+  CONFIG.DIRECTUS_EMAIL = process.env.DIRECTUS_EMAIL;
+}
+if (process.env.DIRECTUS_PASSWORD) {
+  CONFIG.DIRECTUS_PASSWORD = process.env.DIRECTUS_PASSWORD;
+}
+
+// Parse server arguments if provided
+const serverArgs = process.argv.slice(2);
+serverArgs.forEach(arg => {
+  if (arg.startsWith('--directus-url=')) {
+    CONFIG.DIRECTUS_URL = arg.split('=')[1];
+  } else if (arg.startsWith('--directus-token=')) {
+    CONFIG.DIRECTUS_ACCESS_TOKEN = arg.split('=')[1];
+  } else if (arg.startsWith('--directus-email=')) {
+    CONFIG.DIRECTUS_EMAIL = arg.split('=')[1];
+  } else if (arg.startsWith('--directus-password=')) {
+    CONFIG.DIRECTUS_PASSWORD = arg.split('=')[1];
+  }
+});
+
+// Try to load config from file as fallback
 try {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
@@ -24,14 +61,34 @@ try {
   
   if (fs.existsSync(configPath)) {
     const configFile = fs.readFileSync(configPath, 'utf8');
-    CONFIG = JSON.parse(configFile);
+    const fileConfig = JSON.parse(configFile);
+    
+    // Only use file values if not already set by env or args
+    if (!process.env.DIRECTUS_URL && !serverArgs.some(arg => arg.startsWith('--directus-url='))) {
+      CONFIG.DIRECTUS_URL = fileConfig.DIRECTUS_URL || CONFIG.DIRECTUS_URL;
+    }
+    if (!process.env.DIRECTUS_ACCESS_TOKEN && !serverArgs.some(arg => arg.startsWith('--directus-token='))) {
+      CONFIG.DIRECTUS_ACCESS_TOKEN = fileConfig.DIRECTUS_ACCESS_TOKEN || CONFIG.DIRECTUS_ACCESS_TOKEN;
+    }
+    if (!process.env.DIRECTUS_EMAIL && !serverArgs.some(arg => arg.startsWith('--directus-email='))) {
+      CONFIG.DIRECTUS_EMAIL = fileConfig.DIRECTUS_EMAIL || CONFIG.DIRECTUS_EMAIL;
+    }
+    if (!process.env.DIRECTUS_PASSWORD && !serverArgs.some(arg => arg.startsWith('--directus-password='))) {
+      CONFIG.DIRECTUS_PASSWORD = fileConfig.DIRECTUS_PASSWORD || CONFIG.DIRECTUS_PASSWORD;
+    }
   } else {
-    console.warn('Config file not found. Using default values. For production, create a config.json file.');
+    console.warn('Config file not found. Using environment variables or default values.');
   }
 } catch (error) {
-  console.warn('Error loading config:', error instanceof Error ? error.message : String(error));
-  console.warn('Using default configuration');
+  console.warn('Error loading config file:', error instanceof Error ? error.message : String(error));
+  console.warn('Using environment variables or default values.');
 }
+
+// Log configuration source without revealing sensitive information
+console.log(`Using Directus URL: ${CONFIG.DIRECTUS_URL}`);
+console.log(`Auth token: ${CONFIG.DIRECTUS_ACCESS_TOKEN ? '********' : 'not provided'}`);
+console.log(`Email: ${CONFIG.DIRECTUS_EMAIL ? CONFIG.DIRECTUS_EMAIL : 'not provided'}`);
+console.log(`Password: ${CONFIG.DIRECTUS_PASSWORD ? '********' : 'not provided'}`);
 
 // Create MCP server
 const server = new Server({
@@ -77,11 +134,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             collection: { 
               type: "string", 
@@ -103,11 +160,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             collection: { 
               type: "string", 
@@ -133,11 +190,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             collection: { 
               type: "string", 
@@ -159,11 +216,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             collection: { 
               type: "string", 
@@ -189,11 +246,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             collection: { 
               type: "string", 
@@ -215,11 +272,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             endpoint: { 
               type: "string", 
@@ -237,11 +294,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             }
           },
           required: []
@@ -255,15 +312,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             email: { 
               type: "string", 
-              description: "User email (default: nick@stump.works)"
+              description: "User email (default from config)"
             },
             password: { 
               type: "string", 
-              description: "User password"
+              description: "User password (default from config)"
             }
           },
           required: []
@@ -277,11 +334,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             query: {
               type: "object",
@@ -299,11 +356,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             collection: {
               type: "string",
@@ -321,11 +378,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             collection: {
               type: "string",
@@ -343,11 +400,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             query: {
               type: "object",
@@ -365,11 +422,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             fileUrl: {
               type: "string",
@@ -407,11 +464,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             query: {
               type: "object",
@@ -429,11 +486,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             }
           },
           required: []
@@ -447,11 +504,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             query: {
               type: "object",
@@ -469,17 +526,26 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             url: { 
               type: "string", 
-              description: "Directus API URL (default: https://pim.dude.digital)"
+              description: "Directus API URL (default from config)"
             },
             token: { 
               type: "string", 
-              description: "Authentication token (default will be used if not provided)"
+              description: "Authentication token (default from config)"
             },
             query: {
               type: "object",
               description: "Query parameters like filter, sort, limit, etc. (optional)"
             }
           },
+          required: []
+        }
+      },
+      {
+        name: "getConfig",
+        description: "Get current configuration information (without secrets)",
+        inputSchema: {
+          type: "object",
+          properties: {},
           required: []
         }
       }
@@ -498,6 +564,29 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   
   try {
     switch (toolName) {
+      case "getConfig": {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                directus_url: CONFIG.DIRECTUS_URL,
+                using_token: CONFIG.DIRECTUS_ACCESS_TOKEN ? true : false,
+                using_email: CONFIG.DIRECTUS_EMAIL ? true : false,
+                environment_variables: {
+                  DIRECTUS_URL: !!process.env.DIRECTUS_URL,
+                  DIRECTUS_ACCESS_TOKEN: !!process.env.DIRECTUS_ACCESS_TOKEN,
+                  DIRECTUS_EMAIL: !!process.env.DIRECTUS_EMAIL,
+                  DIRECTUS_PASSWORD: !!process.env.DIRECTUS_PASSWORD
+                },
+                // List any server arguments provided
+                server_args: serverArgs
+              }, null, 2)
+            }
+          ]
+        };
+      }
+        
       case "login": {
         const email = toolArgs.email || CONFIG.DIRECTUS_EMAIL;
         const password = toolArgs.password || CONFIG.DIRECTUS_PASSWORD;
@@ -913,4 +1002,4 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 // Server startup
 const transport = new StdioServerTransport();
-server.connect(transport); 
+server.connect(transport);

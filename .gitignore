@@ -23,6 +23,7 @@ yarn-error.log*
 # Editor directories and files
 .idea/
 .vscode/
+.cursor/
 *.suo
 *.ntvs*
 *.njsproj
@@ -36,4 +37,4 @@ yarn-error.log*
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db 
+Thumbs.db
