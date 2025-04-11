@@ -1,6 +1,0 @@
-{
-  "DIRECTUS_URL": "https://your-directus-instance.com",
-  "DIRECTUS_ACCESS_TOKEN": "your-access-token",
-  "DIRECTUS_EMAIL": "your-email@example.com",
-  "DIRECTUS_PASSWORD": "your-password"
-} 

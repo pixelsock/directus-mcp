@@ -5,16 +5,12 @@ import {
   ListToolsRequestSchema 
 } from "@modelcontextprotocol/sdk/types.js";
 import axios from "axios";
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 /**
  * Configuration loading with precedence:
  * 1. Environment variables
  * 2. MCP arguments
- * 3. config.json file
- * 4. Default values
+ * 3. Default values
  */
 
 // Default configuration
@@ -52,43 +48,6 @@ serverArgs.forEach(arg => {
     CONFIG.DIRECTUS_PASSWORD = arg.split('=')[1];
   }
 });
-
-// Try to load config from file as fallback
-try {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  const configPath = path.resolve(__dirname, '../config.json');
-  
-  if (fs.existsSync(configPath)) {
-    const configFile = fs.readFileSync(configPath, 'utf8');
-    const fileConfig = JSON.parse(configFile);
-    
-    // Only use file values if not already set by env or args
-    if (!process.env.DIRECTUS_URL && !serverArgs.some(arg => arg.startsWith('--directus-url='))) {
-      CONFIG.DIRECTUS_URL = fileConfig.DIRECTUS_URL || CONFIG.DIRECTUS_URL;
-    }
-    if (!process.env.DIRECTUS_ACCESS_TOKEN && !serverArgs.some(arg => arg.startsWith('--directus-token='))) {
-      CONFIG.DIRECTUS_ACCESS_TOKEN = fileConfig.DIRECTUS_ACCESS_TOKEN || CONFIG.DIRECTUS_ACCESS_TOKEN;
-    }
-    if (!process.env.DIRECTUS_EMAIL && !serverArgs.some(arg => arg.startsWith('--directus-email='))) {
-      CONFIG.DIRECTUS_EMAIL = fileConfig.DIRECTUS_EMAIL || CONFIG.DIRECTUS_EMAIL;
-    }
-    if (!process.env.DIRECTUS_PASSWORD && !serverArgs.some(arg => arg.startsWith('--directus-password='))) {
-      CONFIG.DIRECTUS_PASSWORD = fileConfig.DIRECTUS_PASSWORD || CONFIG.DIRECTUS_PASSWORD;
-    }
-  } else {
-    console.warn('Config file not found. Using environment variables or default values.');
-  }
-} catch (error) {
-  console.warn('Error loading config file:', error instanceof Error ? error.message : String(error));
-  console.warn('Using environment variables or default values.');
-}
-
-// Log configuration source without revealing sensitive information
-console.log(`Using Directus URL: ${CONFIG.DIRECTUS_URL}`);
-console.log(`Auth token: ${CONFIG.DIRECTUS_ACCESS_TOKEN ? '********' : 'not provided'}`);
-console.log(`Email: ${CONFIG.DIRECTUS_EMAIL ? CONFIG.DIRECTUS_EMAIL : 'not provided'}`);
-console.log(`Password: ${CONFIG.DIRECTUS_PASSWORD ? '********' : 'not provided'}`);
 
 // Create MCP server
 const server = new Server({

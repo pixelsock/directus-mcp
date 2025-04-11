@@ -4,17 +4,31 @@
   "description": "Extended MCP server for Directus API",
   "main": "dist/index.js",
   "type": "module",
+  "bin": {
+    "directus-api-extended": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js"
+    "dev": "concurrently --names \"tsc:watch,inspector:watch\" \"npm run tsc:watch\" \"npm run inspector:watch\"",
+    "build": "npm run tsc",
+    "tsc": "tsc",
+    "tsc:watch": "tsc --watch",
+    "inspector": "npx @modelcontextprotocol/inspector -- nodemon --env-file=.env -q dist/index.js",
+    "inspector:watch": "npx @modelcontextprotocol/inspector -- nodemon --env-file=.env -q --watch dist dist/index.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.6.1",
+    "@modelcontextprotocol/sdk": "^1.8.0",
     "axios": "^1.6.7",
-    "form-data": "^4.0.0"
+    "form-data": "^4.0.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@modelcontextprotocol/inspector": "^1.0.0",
     "@types/node": "^20.11.19",
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.9",
     "typescript": "^5.3.3"
   }
-} 
+}
