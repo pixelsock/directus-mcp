@@ -1,3 +1,5 @@
+[![smithery badge](https://smithery.ai/badge/@pixelsock/directus-mcp)](https://smithery.ai/server/@pixelsock/directus-mcp)
+
 # Directus MCP Server
 
 A Node.js server implementing Model Context Protocol (MCP) for Directus CMS. Enable AI Clients to interact with the [Directus API](https://docs.directus.io/reference/introduction.html) through the Model Context Protocol (MCP).
