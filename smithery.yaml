@@ -5,23 +5,22 @@ startCommand:
   configSchema:
     # JSON Schema defining the configuration options for the MCP.
     type: object
-    required:
-      - DIRECTUS_URL
-      - DIRECTUS_EMAIL
-      - DIRECTUS_PASSWORD
     properties:
       DIRECTUS_URL:
         type: string
         description: URL of the Directus instance (e.g., https://your-directus-instance.com)
       DIRECTUS_ACCESS_TOKEN:
         type: string
-        description: Access token for Directus API authentication
+        description: Access token for Directus API authentication (preferred over email/password)
       DIRECTUS_EMAIL:
         type: string
-        description: Email for Directus user authentication
+        description: Email for Directus user authentication (if access token not provided)
       DIRECTUS_PASSWORD:
         type: string
-        description: Password for Directus user authentication
+        description: Password for Directus user authentication (if access token not provided)
+    oneOf:
+      - required: ["DIRECTUS_URL", "DIRECTUS_ACCESS_TOKEN"]
+      - required: ["DIRECTUS_URL", "DIRECTUS_EMAIL", "DIRECTUS_PASSWORD"]
   commandFunction:
     # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
     |-
@@ -29,9 +28,9 @@ startCommand:
       // Pass configuration through environment variables
       const env = {
         DIRECTUS_URL: config.DIRECTUS_URL,
-        DIRECTUS_ACCESS_TOKEN: config.DIRECTUS_ACCESS_TOKEN || '',
-        DIRECTUS_EMAIL: config.DIRECTUS_EMAIL,
-        DIRECTUS_PASSWORD: config.DIRECTUS_PASSWORD
+        ...config.DIRECTUS_ACCESS_TOKEN ? { DIRECTUS_ACCESS_TOKEN: config.DIRECTUS_ACCESS_TOKEN } : {},
+        ...config.DIRECTUS_EMAIL ? { DIRECTUS_EMAIL: config.DIRECTUS_EMAIL } : {},
+        ...config.DIRECTUS_PASSWORD ? { DIRECTUS_PASSWORD: config.DIRECTUS_PASSWORD } : {}
       };
       return {
         command: 'npm',
@@ -41,6 +40,8 @@ startCommand:
     }
   exampleConfig:
     DIRECTUS_URL: https://your-directus-instance.com
-    DIRECTUS_ACCESS_TOKEN: example-access-token
-    DIRECTUS_EMAIL: user@example.com
-    DIRECTUS_PASSWORD: example-password
+    # Either use an access token (preferred):
+    DIRECTUS_ACCESS_TOKEN: your-access-token
+    # Or use email/password:
+    # DIRECTUS_EMAIL: user@example.com
+    # DIRECTUS_PASSWORD: your-password

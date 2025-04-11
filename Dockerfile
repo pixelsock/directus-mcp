@@ -4,11 +4,11 @@ FROM node:lts-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package.json package-lock.json ./
+# Copy package files
+COPY package*.json ./
 
-# Install dependencies without running prepare scripts (if any)
-RUN npm install --ignore-scripts
+# Install dependencies
+RUN npm ci --only=production
 
 # Copy source files
 COPY . ./
@@ -16,7 +16,10 @@ COPY . ./
 # Build the project
 RUN npm run build
 
+# Set NODE_ENV to production
+ENV NODE_ENV=production
+
 # Expose port if required (not specified, but usually not needed for MCP via stdio)
 
-# Set the default command
+# Start the MCP server
 CMD ["npm", "start"]
