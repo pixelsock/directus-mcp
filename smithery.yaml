@@ -1,0 +1,43 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - directusUrl
+    properties:
+      directusUrl:
+        type: string
+        description: "URL to your Directus instance. Example:
+          https://your-directus-instance.com"
+      directusAccessToken:
+        type: string
+        description: Directus access token for authentication. Optional if using
+          email/password.
+      directusEmail:
+        type: string
+        description: Directus user email for authentication. Optional if using access token.
+      directusPassword:
+        type: string
+        description: Directus user password for authentication. Optional if using access
+          token.
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({
+      command: 'node',
+      args: ['dist/index.js'],
+      env: {
+        DIRECTUS_URL: config.directusUrl,
+        DIRECTUS_ACCESS_TOKEN: config.directusAccessToken || '',
+        DIRECTUS_EMAIL: config.directusEmail || '',
+        DIRECTUS_PASSWORD: config.directusPassword || ''
+      }
+    })
+  exampleConfig:
+    directusUrl: https://your-directus-instance.com
+    directusAccessToken: YOUR_ACCESS_TOKEN
+    directusEmail: your-email@example.com
+    directusPassword: your-password
