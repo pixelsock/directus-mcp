@@ -25,7 +25,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@modelcontextprotocol/inspector": "^1.0.0",
+    "@modelcontextprotocol/inspector": "^0.10.2",
     "@types/node": "^20.11.19",
     "concurrently": "^9.1.2",
     "nodemon": "^3.1.9",
