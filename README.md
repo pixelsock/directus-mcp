@@ -4,6 +4,10 @@
 
 A Node.js server implementing Model Context Protocol (MCP) for Directus CMS. Enable AI Clients to interact with the [Directus API](https://docs.directus.io/reference/introduction.html) through the Model Context Protocol (MCP).
 
+<a href="https://glama.ai/mcp/servers/@pixelsock/directus-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@pixelsock/directus-mcp/badge" alt="Directus Server MCP server" />
+</a>
+
 ## ℹ Prerequisites
 
 - [Node.js](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
