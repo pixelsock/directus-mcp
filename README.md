@@ -144,6 +144,14 @@ getActivity             // Get activity logs from Directus
 getConfig               // Get current configuration information
 ```
 
+### Schema Tools
+
+```
+createCollection        // Create a new collection
+createField             // Create a new field in a collection
+createRelation          // Create a relation between collections
+```
+
 ## 🚧 Development mode
 
 If you want to run the server in development mode:
@@ -176,4 +184,4 @@ If you want to run the server in development mode:
 
 - [Directus API Documentation](https://docs.directus.io/reference/introduction.html)
 - [Directus API Endpoints](https://docs.directus.io/reference/rest-api.html)
-- [Directus JavaScript SDK](https://docs.directus.io/guides/sdk/getting-started.html) 
+- [Directus JavaScript SDK](https://docs.directus.io/guides/sdk/getting-started.html)

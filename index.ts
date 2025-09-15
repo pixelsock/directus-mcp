@@ -1,8 +1,9 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { 
-  CallToolRequestSchema, 
-  ListToolsRequestSchema 
+import "dotenv/config";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import axios from "axios";
 
@@ -15,10 +16,10 @@ import axios from "axios";
 
 // Default configuration
 let CONFIG = {
-  DIRECTUS_URL: "https://example.com",
-  DIRECTUS_ACCESS_TOKEN: "default-token-for-dev",
+  DIRECTUS_URL: "http://localhost:8055",
+  DIRECTUS_ACCESS_TOKEN: "U10ZLtwj7naSkRpwYzWP1gupgLy63Wvc",
   DIRECTUS_EMAIL: "user@example.com",
-  DIRECTUS_PASSWORD: "default-password-for-dev"
+  DIRECTUS_PASSWORD: "default-password-for-dev",
 };
 
 // Load environment variables if present
@@ -37,44 +38,51 @@ if (process.env.DIRECTUS_PASSWORD) {
 
 // Parse server arguments if provided
 const serverArgs = process.argv.slice(2);
-serverArgs.forEach(arg => {
-  if (arg.startsWith('--directus-url=')) {
-    CONFIG.DIRECTUS_URL = arg.split('=')[1];
-  } else if (arg.startsWith('--directus-token=')) {
-    CONFIG.DIRECTUS_ACCESS_TOKEN = arg.split('=')[1];
-  } else if (arg.startsWith('--directus-email=')) {
-    CONFIG.DIRECTUS_EMAIL = arg.split('=')[1];
-  } else if (arg.startsWith('--directus-password=')) {
-    CONFIG.DIRECTUS_PASSWORD = arg.split('=')[1];
+serverArgs.forEach((arg) => {
+  if (arg.startsWith("--directus-url=")) {
+    CONFIG.DIRECTUS_URL = arg.split("=")[1];
+  } else if (arg.startsWith("--directus-token=")) {
+    CONFIG.DIRECTUS_ACCESS_TOKEN = arg.split("=")[1];
+  } else if (arg.startsWith("--directus-email=")) {
+    CONFIG.DIRECTUS_EMAIL = arg.split("=")[1];
+  } else if (arg.startsWith("--directus-password=")) {
+    CONFIG.DIRECTUS_PASSWORD = arg.split("=")[1];
   }
 });
 
 // Create MCP server
-const server = new Server({
-  name: "directus-api-extended",
-  version: "1.0.0"
-}, {
-  capabilities: {
-    tools: {}
+const server = new Server(
+  {
+    name: "directus-api-extended",
+    version: "1.0.0",
+  },
+  {
+    capabilities: {
+      tools: {},
+    },
   }
-});
+);
 
 // Helper function to build headers with authentication token
 const buildHeaders = (token: string): Record<string, string> => {
   return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
   };
 };
 
 // Function to get an authentication token
-async function getAuthToken(url: string, email: string, password: string): Promise<string> {
+async function getAuthToken(
+  url: string,
+  email: string,
+  password: string
+): Promise<string> {
   try {
     const response = await axios.post(`${url}/auth/login`, {
       email,
-      password
+      password,
     });
-    
+
     return response.data.data.access_token;
   } catch (error: any) {
     throw new Error(`Authentication failed: ${error.message}`);
@@ -91,25 +99,26 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
-            collection: { 
-              type: "string", 
-              description: "Collection name" 
+            collection: {
+              type: "string",
+              description: "Collection name",
             },
-            query: { 
-              type: "object", 
-              description: "Query parameters like filter, sort, limit, etc. (optional)"
-            }
+            query: {
+              type: "object",
+              description:
+                "Query parameters like filter, sort, limit, etc. (optional)",
+            },
           },
-          required: ["collection"]
-        }
+          required: ["collection"],
+        },
       },
       {
         name: "getItem",
@@ -117,29 +126,29 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
-            collection: { 
-              type: "string", 
-              description: "Collection name"
+            collection: {
+              type: "string",
+              description: "Collection name",
             },
-            id: { 
-              type: "string", 
-              description: "Item ID"
+            id: {
+              type: "string",
+              description: "Item ID",
             },
-            query: { 
-              type: "object", 
-              description: "Query parameters (optional)"
-            }
+            query: {
+              type: "object",
+              description: "Query parameters (optional)",
+            },
           },
-          required: ["collection", "id"]
-        }
+          required: ["collection", "id"],
+        },
       },
       {
         name: "createItem",
@@ -147,25 +156,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
-            collection: { 
-              type: "string", 
-              description: "Collection name"
+            collection: {
+              type: "string",
+              description: "Collection name",
             },
-            data: { 
-              type: "object", 
-              description: "Item data"
-            }
+            data: {
+              type: "object",
+              description: "Item data",
+            },
           },
-          required: ["collection", "data"]
-        }
+          required: ["collection", "data"],
+        },
       },
       {
         name: "updateItem",
@@ -173,29 +182,29 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
-            collection: { 
-              type: "string", 
-              description: "Collection name"
+            collection: {
+              type: "string",
+              description: "Collection name",
             },
-            id: { 
-              type: "string", 
-              description: "Item ID"
+            id: {
+              type: "string",
+              description: "Item ID",
             },
-            data: { 
-              type: "object", 
-              description: "Updated item data"
-            }
+            data: {
+              type: "object",
+              description: "Updated item data",
+            },
           },
-          required: ["collection", "id", "data"]
-        }
+          required: ["collection", "id", "data"],
+        },
       },
       {
         name: "deleteItem",
@@ -203,25 +212,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
-            collection: { 
-              type: "string", 
-              description: "Collection name"
+            collection: {
+              type: "string",
+              description: "Collection name",
             },
-            id: { 
-              type: "string", 
-              description: "Item ID"
-            }
+            id: {
+              type: "string",
+              description: "Item ID",
+            },
           },
-          required: ["collection", "id"]
-        }
+          required: ["collection", "id"],
+        },
       },
       {
         name: "getSystemInfo",
@@ -229,21 +238,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
-            endpoint: { 
-              type: "string", 
-              description: "System endpoint (e.g. 'health', 'info', 'activity')"
-            }
+            endpoint: {
+              type: "string",
+              description:
+                "System endpoint (e.g. 'health', 'info', 'activity')",
+            },
           },
-          required: ["endpoint"]
-        }
+          required: ["endpoint"],
+        },
       },
       {
         name: "getCollections",
@@ -251,17 +261,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
-            }
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
+            },
           },
-          required: []
-        }
+          required: [],
+        },
       },
       {
         name: "login",
@@ -269,21 +279,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            email: { 
-              type: "string", 
-              description: "User email (default from config)"
+            email: {
+              type: "string",
+              description: "User email (default from config)",
             },
-            password: { 
-              type: "string", 
-              description: "User password (default from config)"
-            }
+            password: {
+              type: "string",
+              description: "User password (default from config)",
+            },
           },
-          required: []
-        }
+          required: [],
+        },
       },
       {
         name: "getActivity",
@@ -291,21 +301,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
             query: {
               type: "object",
-              description: "Query parameters like filter, sort, limit, etc. (optional)"
-            }
+              description:
+                "Query parameters like filter, sort, limit, etc. (optional)",
+            },
           },
-          required: []
-        }
+          required: [],
+        },
       },
       {
         name: "getFields",
@@ -313,21 +324,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
             collection: {
               type: "string",
-              description: "Collection name"
-            }
+              description: "Collection name",
+            },
           },
-          required: ["collection"]
-        }
+          required: ["collection"],
+        },
       },
       {
         name: "getRelations",
@@ -335,21 +346,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
             collection: {
               type: "string",
-              description: "Collection name (optional)"
-            }
+              description: "Collection name (optional)",
+            },
           },
-          required: []
-        }
+          required: [],
+        },
       },
       {
         name: "getFiles",
@@ -357,21 +368,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
             query: {
               type: "object",
-              description: "Query parameters like filter, sort, limit, etc. (optional)"
-            }
+              description:
+                "Query parameters like filter, sort, limit, etc. (optional)",
+            },
           },
-          required: []
-        }
+          required: [],
+        },
       },
       {
         name: "uploadFile",
@@ -379,41 +391,43 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
             fileUrl: {
               type: "string",
-              description: "URL of the file to upload (either fileUrl or fileData must be provided)"
+              description:
+                "URL of the file to upload (either fileUrl or fileData must be provided)",
             },
             fileData: {
               type: "string",
-              description: "Base64 encoded file data (either fileUrl or fileData must be provided)"
+              description:
+                "Base64 encoded file data (either fileUrl or fileData must be provided)",
             },
             fileName: {
               type: "string",
-              description: "Name of the file"
+              description: "Name of the file",
             },
             mimeType: {
               type: "string",
-              description: "MIME type of the file"
+              description: "MIME type of the file",
             },
             storage: {
               type: "string",
-              description: "Storage location (optional)"
+              description: "Storage location (optional)",
             },
             title: {
               type: "string",
-              description: "File title (optional)"
-            }
+              description: "File title (optional)",
+            },
           },
-          required: ["fileName"]
-        }
+          required: ["fileName"],
+        },
       },
       {
         name: "getUsers",
@@ -421,21 +435,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
             query: {
               type: "object",
-              description: "Query parameters like filter, sort, limit, etc. (optional)"
-            }
+              description:
+                "Query parameters like filter, sort, limit, etc. (optional)",
+            },
           },
-          required: []
-        }
+          required: [],
+        },
       },
       {
         name: "getCurrentUser",
@@ -443,17 +458,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
-            }
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
+            },
           },
-          required: []
-        }
+          required: [],
+        },
       },
       {
         name: "getRoles",
@@ -461,21 +476,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
             query: {
               type: "object",
-              description: "Query parameters like filter, sort, limit, etc. (optional)"
-            }
+              description:
+                "Query parameters like filter, sort, limit, etc. (optional)",
+            },
           },
-          required: []
-        }
+          required: [],
+        },
       },
       {
         name: "getPermissions",
@@ -483,21 +499,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            url: { 
-              type: "string", 
-              description: "Directus API URL (default from config)"
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)",
             },
-            token: { 
-              type: "string", 
-              description: "Authentication token (default from config)"
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)",
             },
             query: {
               type: "object",
-              description: "Query parameters like filter, sort, limit, etc. (optional)"
-            }
+              description:
+                "Query parameters like filter, sort, limit, etc. (optional)",
+            },
           },
-          required: []
-        }
+          required: [],
+        },
       },
       {
         name: "getConfig",
@@ -505,10 +522,52 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {},
-          required: []
-        }
-      }
-    ]
+          required: [],
+        },
+      },
+      // schema tools
+      {
+        name: "createCollection",
+        description: "Create a new collection",
+        inputSchema: {
+          type: "object",
+          properties: {
+            collection: { type: "string" },
+            meta: { type: "object" },
+            schema: { type: "object" },
+          },
+          required: ["collection"],
+        },
+      },
+      {
+        name: "createField",
+        description: "Create a new field in a collection",
+        inputSchema: {
+          type: "object",
+          properties: {
+            collection: { type: "string" },
+            field: { type: "string" },
+            type: { type: "string" },
+            meta: { type: "object" },
+          },
+          required: ["collection", "field", "type"],
+        },
+      },
+      {
+        name: "createRelation",
+        description: "Create a relation between collections",
+        inputSchema: {
+          type: "object",
+          properties: {
+            collection: { type: "string" },
+            field: { type: "string" },
+            related_collection: { type: "string" },
+            meta: { type: "object" },
+          },
+          required: ["collection", "field", "related_collection"],
+        },
+      },
+    ],
   };
 });
 
@@ -517,10 +576,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const toolName = request.params.name;
   // Type assertion for arguments
   const toolArgs = request.params.arguments as Record<string, any>;
-  
+
   // Set default URL if not provided
-  const url = toolArgs.url || CONFIG.DIRECTUS_URL;
-  
+
+  const args = request.params.arguments as Record<string, any>;
+  const url = CONFIG.DIRECTUS_URL;
+  const token = args.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
   try {
     switch (toolName) {
       case "getConfig": {
@@ -528,271 +589,256 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify({
-                directus_url: CONFIG.DIRECTUS_URL,
-                using_token: CONFIG.DIRECTUS_ACCESS_TOKEN ? true : false,
-                using_email: CONFIG.DIRECTUS_EMAIL ? true : false,
-                environment_variables: {
-                  DIRECTUS_URL: !!process.env.DIRECTUS_URL,
-                  DIRECTUS_ACCESS_TOKEN: !!process.env.DIRECTUS_ACCESS_TOKEN,
-                  DIRECTUS_EMAIL: !!process.env.DIRECTUS_EMAIL,
-                  DIRECTUS_PASSWORD: !!process.env.DIRECTUS_PASSWORD
+              text: JSON.stringify(
+                {
+                  directus_url: CONFIG.DIRECTUS_URL,
+                  using_token: CONFIG.DIRECTUS_ACCESS_TOKEN ? true : false,
+                  using_email: CONFIG.DIRECTUS_EMAIL ? true : false,
+                  environment_variables: {
+                    DIRECTUS_URL: !!process.env.DIRECTUS_URL,
+                    DIRECTUS_ACCESS_TOKEN: !!process.env.DIRECTUS_ACCESS_TOKEN,
+                    DIRECTUS_EMAIL: !!process.env.DIRECTUS_EMAIL,
+                    DIRECTUS_PASSWORD: !!process.env.DIRECTUS_PASSWORD,
+                  },
+                  // List any server arguments provided
+                  server_args: serverArgs,
                 },
-                // List any server arguments provided
-                server_args: serverArgs
-              }, null, 2)
-            }
-          ]
+                null,
+                2
+              ),
+            },
+          ],
         };
       }
-        
+
       case "login": {
         const email = toolArgs.email || CONFIG.DIRECTUS_EMAIL;
         const password = toolArgs.password || CONFIG.DIRECTUS_PASSWORD;
-        
+
         const token = await getAuthToken(url, email, password);
-        
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify({ access_token: token }, null, 2)
-            }
-          ]
+              text: JSON.stringify({ access_token: token }, null, 2),
+            },
+          ],
         };
       }
-      
+
       case "getCollections": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
-        
-        const response = await axios.get(
-          `${url}/collections`,
-          { headers: buildHeaders(token) }
-        );
-        
+
+        const response = await axios.get(`${url}/collections`, {
+          headers: buildHeaders(token),
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
-      
+
       case "getItems": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const collection = toolArgs.collection as string;
         const query = toolArgs.query as Record<string, any> | undefined;
-        
-        const response = await axios.get(
-          `${url}/items/${collection}`, 
-          { 
-            headers: buildHeaders(token),
-            params: query
-          }
-        );
-        
+
+        const response = await axios.get(`${url}/items/${collection}`, {
+          headers: buildHeaders(token),
+          params: query,
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
-      
+
       case "getItem": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const collection = toolArgs.collection as string;
         const id = toolArgs.id as string | number;
         const query = toolArgs.query as Record<string, any> | undefined;
-        
-        const response = await axios.get(
-          `${url}/items/${collection}/${id}`, 
-          { 
-            headers: buildHeaders(token),
-            params: query
-          }
-        );
-        
+
+        const response = await axios.get(`${url}/items/${collection}/${id}`, {
+          headers: buildHeaders(token),
+          params: query,
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
-      
+
       case "createItem": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const collection = toolArgs.collection as string;
         const data = toolArgs.data as Record<string, any>;
-        
-        const response = await axios.post(
-          `${url}/items/${collection}`,
-          data,
-          { headers: buildHeaders(token) }
-        );
-        
+
+        const response = await axios.post(`${url}/items/${collection}`, data, {
+          headers: buildHeaders(token),
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
-      
+
       case "updateItem": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const collection = toolArgs.collection as string;
         const id = toolArgs.id as string | number;
         const data = toolArgs.data as Record<string, any>;
-        
+
         const response = await axios.patch(
           `${url}/items/${collection}/${id}`,
           data,
           { headers: buildHeaders(token) }
         );
-        
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
-      
+
       case "deleteItem": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const collection = toolArgs.collection as string;
         const id = toolArgs.id as string | number;
-        
-        await axios.delete(
-          `${url}/items/${collection}/${id}`,
-          { headers: buildHeaders(token) }
-        );
-        
+
+        await axios.delete(`${url}/items/${collection}/${id}`, {
+          headers: buildHeaders(token),
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: "Item deleted successfully"
-            }
-          ]
+              text: "Item deleted successfully",
+            },
+          ],
         };
       }
-      
+
       case "getSystemInfo": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const endpoint = toolArgs.endpoint as string;
-        
-        const response = await axios.get(
-          `${url}/server/${endpoint}`,
-          { headers: buildHeaders(token) }
-        );
-        
+
+        const response = await axios.get(`${url}/server/${endpoint}`, {
+          headers: buildHeaders(token),
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
 
       case "getActivity": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const query = toolArgs.query as Record<string, any> | undefined;
-        
-        const response = await axios.get(
-          `${url}/activity`,
-          { 
-            headers: buildHeaders(token),
-            params: query
-          }
-        );
-        
+
+        const response = await axios.get(`${url}/activity`, {
+          headers: buildHeaders(token),
+          params: query,
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
 
       case "getFields": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const collection = toolArgs.collection as string;
-        
-        const response = await axios.get(
-          `${url}/fields/${collection}`,
-          { headers: buildHeaders(token) }
-        );
-        
+
+        const response = await axios.get(`${url}/fields/${collection}`, {
+          headers: buildHeaders(token),
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
 
       case "getRelations": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const collection = toolArgs.collection as string | undefined;
-        
+
         let endpoint = `${url}/relations`;
         if (collection) {
           endpoint += `/${collection}`;
         }
-        
-        const response = await axios.get(
-          endpoint,
-          { headers: buildHeaders(token) }
-        );
-        
+
+        const response = await axios.get(endpoint, {
+          headers: buildHeaders(token),
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
 
       case "getFiles": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const query = toolArgs.query as Record<string, any> | undefined;
-        
-        const response = await axios.get(
-          `${url}/files`,
-          { 
-            headers: buildHeaders(token),
-            params: query
-          }
-        );
-        
+
+        const response = await axios.get(`${url}/files`, {
+          headers: buildHeaders(token),
+          params: query,
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
 
@@ -804,157 +850,193 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const mimeType = toolArgs.mimeType as string | undefined;
         const storage = toolArgs.storage as string | undefined;
         const title = toolArgs.title as string | undefined;
-        
+
         let fileContent: Buffer;
-        
+
         // Get file data either from URL or base64 data
         if (fileUrl) {
-          const fileResponse = await axios.get(fileUrl, { responseType: 'arraybuffer' });
+          const fileResponse = await axios.get(fileUrl, {
+            responseType: "arraybuffer",
+          });
           fileContent = Buffer.from(fileResponse.data);
         } else if (fileData) {
-          fileContent = Buffer.from(fileData, 'base64');
+          fileContent = Buffer.from(fileData, "base64");
         } else {
           throw new Error("Either fileUrl or fileData must be provided");
         }
-        
+
         // Create form data for file upload
-        const FormData = (await import('form-data')).default;
+        const FormData = (await import("form-data")).default;
         const formData = new FormData();
-        
-        formData.append('file', fileContent, {
+
+        formData.append("file", fileContent, {
           filename: fileName,
-          contentType: mimeType
+          contentType: mimeType,
         });
-        
+
         if (storage) {
-          formData.append('storage', storage);
+          formData.append("storage", storage);
         }
-        
+
         if (title) {
-          formData.append('title', title);
+          formData.append("title", title);
         }
-        
-        const response = await axios.post(
-          `${url}/files`,
-          formData,
-          { 
-            headers: {
-              ...buildHeaders(token),
-              ...formData.getHeaders()
-            }
-          }
-        );
-        
+
+        const response = await axios.post(`${url}/files`, formData, {
+          headers: {
+            ...buildHeaders(token),
+            ...formData.getHeaders(),
+          },
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
 
       case "getUsers": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const query = toolArgs.query as Record<string, any> | undefined;
-        
-        const response = await axios.get(
-          `${url}/users`,
-          { 
-            headers: buildHeaders(token),
-            params: query
-          }
-        );
-        
+
+        const response = await axios.get(`${url}/users`, {
+          headers: buildHeaders(token),
+          params: query,
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
 
       case "getCurrentUser": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
-        
-        const response = await axios.get(
-          `${url}/users/me`,
-          { headers: buildHeaders(token) }
-        );
-        
+
+        const response = await axios.get(`${url}/users/me`, {
+          headers: buildHeaders(token),
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
 
       case "getRoles": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const query = toolArgs.query as Record<string, any> | undefined;
-        
-        const response = await axios.get(
-          `${url}/roles`,
-          { 
-            headers: buildHeaders(token),
-            params: query
-          }
-        );
-        
+
+        const response = await axios.get(`${url}/roles`, {
+          headers: buildHeaders(token),
+          params: query,
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
 
       case "getPermissions": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const query = toolArgs.query as Record<string, any> | undefined;
-        
-        const response = await axios.get(
-          `${url}/permissions`,
-          { 
-            headers: buildHeaders(token),
-            params: query
-          }
-        );
-        
+
+        const response = await axios.get(`${url}/permissions`, {
+          headers: buildHeaders(token),
+          params: query,
+        });
+
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
-            }
-          ]
+              text: JSON.stringify(response.data, null, 2),
+            },
+          ],
         };
       }
-      
+
+      // Schema Tools
+      case "createCollection": {
+        const res = await axios.post(
+          `${url}/collections`,
+          {
+            collection: args.collection,
+            meta: {
+              icon: args.meta?.icon || "Database",
+              ...args.meta,
+            },
+            schema: args.schema || {},
+          },
+          { headers: buildHeaders(token) }
+        );
+        return {
+          content: [{ type: "text", text: JSON.stringify(res.data, null, 2) }],
+        };
+      }
+      case "createField": {
+        const res = await axios.post(
+          `${url}/fields/${args.collection}`,
+          {
+            field: args.field,
+            type: args.type,
+            meta: args.meta || {},
+          },
+          { headers: buildHeaders(token) }
+        );
+        return {
+          content: [{ type: "text", text: JSON.stringify(res.data, null, 2) }],
+        };
+      }
+      case "createRelation": {
+        const res = await axios.post(
+          `${url}/relations`,
+          {
+            collection: args.collection,
+            field: args.field,
+            related_collection: args.related_collection,
+            meta: args.meta || {},
+          },
+          { headers: buildHeaders(token) }
+        );
+        return {
+          content: [{ type: "text", text: JSON.stringify(res.data, null, 2) }],
+        };
+      }
+
       default:
         throw new Error(`Tool "${toolName}" not found`);
     }
   } catch (error: any) {
     // Handle API errors
-    const errorMessage = error.response?.data?.errors 
+    const errorMessage = error.response?.data?.errors
       ? JSON.stringify(error.response.data.errors, null, 2)
       : error.message;
-      
+
     return {
       content: [
         {
           type: "text",
-          text: `Error: ${errorMessage}`
-        }
-      ]
+          text: `Error: ${errorMessage}`,
+        },
+      ],
     };
   }
 });
