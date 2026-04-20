@@ -115,6 +115,9 @@ createItem              // Create a new item in a collection
 updateItem              // Update an existing item in a collection
 deleteItem              // Delete an item from a collection
 getCollections          // Get all collection schemas
+createCollection        // Create a new collection
+updateCollection        // Update an existing collection's metadata
+deleteCollection        // Delete a collection
 getFields               // Get fields for a collection
 getRelations            // Get relations for a collection
 ```
