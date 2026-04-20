@@ -507,6 +507,324 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {},
           required: []
         }
+      },
+      {
+        name: "getFlows",
+        description: "Get all flows from Directus",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            query: {
+              type: "object",
+              description: "Query parameters like filter, sort, limit, etc. (optional)"
+            }
+          },
+          required: []
+        }
+      },
+      {
+        name: "getFlow",
+        description: "Get a single flow from Directus by ID",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            id: {
+              type: "string",
+              description: "Flow ID"
+            }
+          },
+          required: ["id"]
+        }
+      },
+      {
+        name: "createFlow",
+        description: "Create a new flow in Directus",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            name: {
+              type: "string",
+              description: "Name of the flow"
+            },
+            status: {
+              type: "string",
+              description: "Flow status: 'active' or 'inactive' (default: 'active')"
+            },
+            trigger: {
+              type: "string",
+              description: "Trigger type: 'manual', 'event', 'schedule', 'webhook', 'operation'"
+            },
+            accountability: {
+              type: "string",
+              description: "Accountability level: 'all', 'activity', or null"
+            },
+            options: {
+              type: "object",
+              description: "Trigger-specific options (e.g. cron string for schedule, collections for event)"
+            },
+            icon: {
+              type: "string",
+              description: "Material icon name for the flow (optional)"
+            },
+            color: {
+              type: "string",
+              description: "Hex color string for the flow icon (optional)"
+            },
+            description: {
+              type: "string",
+              description: "Description of the flow (optional)"
+            }
+          },
+          required: ["name", "trigger"]
+        }
+      },
+      {
+        name: "updateFlow",
+        description: "Update an existing flow in Directus",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            id: {
+              type: "string",
+              description: "Flow ID"
+            },
+            data: {
+              type: "object",
+              description: "Fields to update (name, status, trigger, accountability, options, icon, color, description)"
+            }
+          },
+          required: ["id", "data"]
+        }
+      },
+      {
+        name: "deleteFlow",
+        description: "Delete a flow from Directus",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            id: {
+              type: "string",
+              description: "Flow ID"
+            }
+          },
+          required: ["id"]
+        }
+      },
+      {
+        name: "getOperations",
+        description: "Get operations from Directus, optionally filtered by flow",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            query: {
+              type: "object",
+              description: "Query parameters like filter, sort, limit, etc. (optional)"
+            }
+          },
+          required: []
+        }
+      },
+      {
+        name: "getOperation",
+        description: "Get a single operation from Directus by ID",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            id: {
+              type: "string",
+              description: "Operation ID"
+            }
+          },
+          required: ["id"]
+        }
+      },
+      {
+        name: "createOperation",
+        description: "Create a new operation inside a Directus flow",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            flow: {
+              type: "string",
+              description: "ID of the parent flow"
+            },
+            name: {
+              type: "string",
+              description: "Display name of the operation"
+            },
+            key: {
+              type: "string",
+              description: "Unique key for the operation within the flow"
+            },
+            type: {
+              type: "string",
+              description: "Operation type (e.g. 'log', 'run-script', 'item-create', 'item-read', 'item-update', 'item-delete', 'request', 'mail', 'notification', 'condition')"
+            },
+            position_x: {
+              type: "number",
+              description: "Horizontal position on the flow canvas"
+            },
+            position_y: {
+              type: "number",
+              description: "Vertical position on the flow canvas"
+            },
+            options: {
+              type: "object",
+              description: "Operation-specific configuration options"
+            },
+            resolve: {
+              type: "string",
+              description: "ID of the operation to run on success (optional)"
+            },
+            reject: {
+              type: "string",
+              description: "ID of the operation to run on failure (optional)"
+            }
+          },
+          required: ["flow", "name", "key", "type"]
+        }
+      },
+      {
+        name: "updateOperation",
+        description: "Update an existing operation in Directus",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            id: {
+              type: "string",
+              description: "Operation ID"
+            },
+            data: {
+              type: "object",
+              description: "Fields to update (name, key, type, position_x, position_y, options, resolve, reject)"
+            }
+          },
+          required: ["id", "data"]
+        }
+      },
+      {
+        name: "deleteOperation",
+        description: "Delete an operation from Directus",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            id: {
+              type: "string",
+              description: "Operation ID"
+            }
+          },
+          required: ["id"]
+        }
+      },
+      {
+        name: "triggerFlow",
+        description: "Trigger a Directus flow manually via its webhook or manual trigger",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            id: {
+              type: "string",
+              description: "Flow ID (for manual trigger) or webhook key"
+            },
+            data: {
+              type: "object",
+              description: "Payload to pass to the flow (optional)"
+            },
+            method: {
+              type: "string",
+              description: "HTTP method to use for webhook triggers: 'GET' or 'POST' (default: 'POST')"
+            }
+          },
+          required: ["id"]
+        }
       }
     ]
   };
@@ -939,6 +1257,241 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
       
+      case "getFlows": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const query = toolArgs.query as Record<string, any> | undefined;
+
+        const response = await axios.get(
+          `${url}/flows`,
+          {
+            headers: buildHeaders(token),
+            params: query
+          }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(response.data, null, 2)
+            }
+          ]
+        };
+      }
+
+      case "getFlow": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const id = toolArgs.id as string;
+
+        const response = await axios.get(
+          `${url}/flows/${id}`,
+          { headers: buildHeaders(token) }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(response.data, null, 2)
+            }
+          ]
+        };
+      }
+
+      case "createFlow": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const { url: _url, token: _token, ...flowData } = toolArgs;
+
+        const response = await axios.post(
+          `${url}/flows`,
+          flowData,
+          { headers: buildHeaders(token) }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(response.data, null, 2)
+            }
+          ]
+        };
+      }
+
+      case "updateFlow": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const id = toolArgs.id as string;
+        const data = toolArgs.data as Record<string, any>;
+
+        const response = await axios.patch(
+          `${url}/flows/${id}`,
+          data,
+          { headers: buildHeaders(token) }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(response.data, null, 2)
+            }
+          ]
+        };
+      }
+
+      case "deleteFlow": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const id = toolArgs.id as string;
+
+        await axios.delete(
+          `${url}/flows/${id}`,
+          { headers: buildHeaders(token) }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Flow deleted successfully"
+            }
+          ]
+        };
+      }
+
+      case "getOperations": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const query = toolArgs.query as Record<string, any> | undefined;
+
+        const response = await axios.get(
+          `${url}/operations`,
+          {
+            headers: buildHeaders(token),
+            params: query
+          }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(response.data, null, 2)
+            }
+          ]
+        };
+      }
+
+      case "getOperation": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const id = toolArgs.id as string;
+
+        const response = await axios.get(
+          `${url}/operations/${id}`,
+          { headers: buildHeaders(token) }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(response.data, null, 2)
+            }
+          ]
+        };
+      }
+
+      case "createOperation": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const { url: _url, token: _token, ...operationData } = toolArgs;
+
+        const response = await axios.post(
+          `${url}/operations`,
+          operationData,
+          { headers: buildHeaders(token) }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(response.data, null, 2)
+            }
+          ]
+        };
+      }
+
+      case "updateOperation": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const id = toolArgs.id as string;
+        const data = toolArgs.data as Record<string, any>;
+
+        const response = await axios.patch(
+          `${url}/operations/${id}`,
+          data,
+          { headers: buildHeaders(token) }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(response.data, null, 2)
+            }
+          ]
+        };
+      }
+
+      case "deleteOperation": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const id = toolArgs.id as string;
+
+        await axios.delete(
+          `${url}/operations/${id}`,
+          { headers: buildHeaders(token) }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Operation deleted successfully"
+            }
+          ]
+        };
+      }
+
+      case "triggerFlow": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const id = toolArgs.id as string;
+        const data = toolArgs.data as Record<string, any> | undefined;
+        const method = ((toolArgs.method as string) || "POST").toUpperCase();
+
+        let response;
+        if (method === "GET") {
+          response = await axios.get(
+            `${url}/flows/trigger/${id}`,
+            {
+              headers: buildHeaders(token),
+              params: data
+            }
+          );
+        } else {
+          response = await axios.post(
+            `${url}/flows/trigger/${id}`,
+            data || {},
+            { headers: buildHeaders(token) }
+          );
+        }
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(response.data ?? { triggered: true }, null, 2)
+            }
+          ]
+        };
+      }
+
       default:
         throw new Error(`Tool "${toolName}" not found`);
     }

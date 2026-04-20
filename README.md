@@ -144,6 +144,22 @@ getActivity             // Get activity logs from Directus
 getConfig               // Get current configuration information
 ```
 
+### Flows and Operations
+
+```
+getFlows                // Get all flows from Directus
+getFlow                 // Get a single flow by ID
+createFlow              // Create a new flow
+updateFlow              // Update an existing flow
+deleteFlow              // Delete a flow
+getOperations           // Get all operations (optionally filter by flow via query)
+getOperation            // Get a single operation by ID
+createOperation         // Create a new operation inside a flow
+updateOperation         // Update an existing operation
+deleteOperation         // Delete an operation
+triggerFlow             // Manually trigger a flow (webhook or manual trigger)
+```
+
 ## 🚧 Development mode
 
 If you want to run the server in development mode:
