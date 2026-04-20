@@ -500,6 +500,84 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         }
       },
       {
+        name: "bulk_operations",
+        description: "Perform bulk create, update, and/or delete operations on items in a Directus collection",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            collection: {
+              type: "string",
+              description: "Collection name"
+            },
+            operations: {
+              type: "object",
+              description: "Bulk operations to perform",
+              properties: {
+                create: {
+                  type: "array",
+                  description: "Array of item objects to create",
+                  items: { type: "object" }
+                },
+                update: {
+                  type: "array",
+                  description: "Array of item objects to update (each must include the primary key)",
+                  items: { type: "object" }
+                },
+                delete: {
+                  type: "array",
+                  description: "Array of item IDs to delete",
+                  items: { type: "string" }
+                }
+              }
+            }
+          },
+          required: ["collection", "operations"]
+        }
+      },
+      {
+        name: "create_collection",
+        description: "Create a new collection in Directus",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            collection: {
+              type: "string",
+              description: "Name of the collection to create"
+            },
+            meta: {
+              type: "object",
+              description: "Collection meta options (optional)"
+            },
+            schema: {
+              type: "object",
+              description: "Collection schema options (optional)"
+            },
+            fields: {
+              type: "array",
+              description: "Array of field definitions to create alongside the collection (optional)",
+              items: { type: "object" }
+            }
+          },
+          required: ["collection"]
+        }
+      },
+      {
         name: "getConfig",
         description: "Get current configuration information (without secrets)",
         inputSchema: {
@@ -939,6 +1017,84 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
       
+      case "bulk_operations": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const collection = toolArgs.collection as string;
+        const operations = toolArgs.operations as {
+          create?: Record<string, any>[];
+          update?: Record<string, any>[];
+          delete?: (string | number)[];
+        };
+
+        const results: Record<string, any> = {};
+
+        if (operations.create && operations.create.length > 0) {
+          const createResponse = await axios.post(
+            `${url}/items/${collection}`,
+            operations.create,
+            { headers: buildHeaders(token) }
+          );
+          results.created = createResponse.data;
+        }
+
+        if (operations.update && operations.update.length > 0) {
+          const updateResponse = await axios.patch(
+            `${url}/items/${collection}`,
+            operations.update,
+            { headers: buildHeaders(token) }
+          );
+          results.updated = updateResponse.data;
+        }
+
+        if (operations.delete && operations.delete.length > 0) {
+          await axios.delete(
+            `${url}/items/${collection}`,
+            {
+              headers: buildHeaders(token),
+              data: operations.delete
+            }
+          );
+          results.deleted = operations.delete;
+        }
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(results, null, 2)
+            }
+          ]
+        };
+      }
+
+      case "create_collection": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const collection = toolArgs.collection as string;
+        const meta = toolArgs.meta as Record<string, any> | undefined;
+        const schema = toolArgs.schema as Record<string, any> | undefined;
+        const fields = toolArgs.fields as Record<string, any>[] | undefined;
+
+        const payload: Record<string, any> = { collection };
+        if (meta) payload.meta = meta;
+        if (schema) payload.schema = schema;
+        if (fields) payload.fields = fields;
+
+        const response = await axios.post(
+          `${url}/collections`,
+          payload,
+          { headers: buildHeaders(token) }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(response.data, null, 2)
+            }
+          ]
+        };
+      }
+
       default:
         throw new Error(`Tool "${toolName}" not found`);
     }
