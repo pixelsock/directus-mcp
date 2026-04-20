@@ -264,6 +264,88 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         }
       },
       {
+        name: "createCollection",
+        description: "Create a new collection in Directus",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            collection: {
+              type: "string",
+              description: "Name of the collection to create"
+            },
+            fields: {
+              type: "array",
+              description: "Array of field objects to create with the collection (optional)"
+            },
+            meta: {
+              type: "object",
+              description: "Collection metadata such as icon, note, display_template, etc. (optional)"
+            },
+            schema: {
+              type: "object",
+              description: "Schema options for the collection table (optional)"
+            }
+          },
+          required: ["collection"]
+        }
+      },
+      {
+        name: "updateCollection",
+        description: "Update an existing collection's metadata in Directus",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            collection: {
+              type: "string",
+              description: "Name of the collection to update"
+            },
+            meta: {
+              type: "object",
+              description: "Collection metadata to update (e.g. icon, note, display_template)"
+            }
+          },
+          required: ["collection", "meta"]
+        }
+      },
+      {
+        name: "deleteCollection",
+        description: "Delete a collection from Directus",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "Directus API URL (default from config)"
+            },
+            token: {
+              type: "string",
+              description: "Authentication token (default from config)"
+            },
+            collection: {
+              type: "string",
+              description: "Name of the collection to delete"
+            }
+          },
+          required: ["collection"]
+        }
+      },
+      {
         name: "login",
         description: "Login to Directus and get an access token",
         inputSchema: {
@@ -575,6 +657,74 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: JSON.stringify(response.data, null, 2)
+            }
+          ]
+        };
+      }
+
+      case "createCollection": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const collection = toolArgs.collection as string;
+        const fields = toolArgs.fields as any[] | undefined;
+        const meta = toolArgs.meta as Record<string, any> | undefined;
+        const schema = toolArgs.schema as Record<string, any> | undefined;
+
+        const body: Record<string, any> = { collection };
+        if (fields !== undefined) body.fields = fields;
+        if (meta !== undefined) body.meta = meta;
+        if (schema !== undefined) body.schema = schema;
+
+        const response = await axios.post(
+          `${url}/collections`,
+          body,
+          { headers: buildHeaders(token) }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(response.data, null, 2)
+            }
+          ]
+        };
+      }
+
+      case "updateCollection": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const collection = toolArgs.collection as string;
+        const meta = toolArgs.meta as Record<string, any>;
+
+        const response = await axios.patch(
+          `${url}/collections/${collection}`,
+          { meta },
+          { headers: buildHeaders(token) }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(response.data, null, 2)
+            }
+          ]
+        };
+      }
+
+      case "deleteCollection": {
+        const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
+        const collection = toolArgs.collection as string;
+
+        await axios.delete(
+          `${url}/collections/${collection}`,
+          { headers: buildHeaders(token) }
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Collection deleted successfully"
             }
           ]
         };
