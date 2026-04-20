@@ -12,7 +12,7 @@ A Node.js server implementing Model Context Protocol (MCP) for Directus CMS. Ena
 
 - [Node.js](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 - [NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
-- [A Directus Instance](https://directus.io/guides/get-started-with-directus-cloud)
+- A Directus instance ([Cloud](https://directus.io/guides/get-started-with-directus-cloud) or [self-hosted](https://docs.directus.io/self-hosted/quickstart.html))
 
 ## ▶️ Quick start
 
