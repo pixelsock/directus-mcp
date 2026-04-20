@@ -20,15 +20,18 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.8.0",
-    "axios": "^1.6.7",
-    "form-data": "^4.0.0",
+    "axios": "^1.15.1",
+    "form-data": "^4.0.5",
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@modelcontextprotocol/inspector": "^0.10.2",
+    "@modelcontextprotocol/inspector": "^0.16.6",
     "@types/node": "^20.11.19",
     "concurrently": "^9.1.2",
     "nodemon": "^3.1.9",
     "typescript": "^5.3.3"
+  },
+  "overrides": {
+    "path-to-regexp": "^8.4.0"
   }
 }
