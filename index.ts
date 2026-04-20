@@ -49,6 +49,37 @@ serverArgs.forEach(arg => {
   }
 });
 
+// Maximum number of characters allowed in a single tool response.
+// Claude's context window is roughly 200 000 tokens (~800 000 chars).
+// A single large Directus response (e.g. full collection schemas) can easily
+// exceed 100 000 chars and fill most of the context after only one tool call,
+// causing subsequent questions to fail with "maximum length reached".
+// 50 000 chars (~12 500 tokens) leaves ample room for conversation history
+// and multiple tool exchanges while still conveying meaningful data.
+const MAX_RESPONSE_SIZE = 50000;
+
+/**
+ * Serialise `data` to pretty-printed JSON and, when the result exceeds
+ * MAX_RESPONSE_SIZE, truncate it and append a short guidance note so the
+ * caller knows how to retrieve the rest of the data.
+ *
+ * NOTE: Truncation happens at a character boundary, so the returned string
+ * may not be valid JSON when the limit is reached. It is intentionally
+ * returned as plain text so the AI assistant can still read the visible
+ * portion and understand it needs to narrow its query.
+ */
+function truncateResponse(data: unknown, maxSize: number = MAX_RESPONSE_SIZE): string {
+  const text = JSON.stringify(data, null, 2);
+  if (text.length <= maxSize) {
+    return text;
+  }
+  const note =
+    `\n\n... [Response truncated: ${text.length} chars total, showing first ${maxSize}. ` +
+    `NOTE: The JSON above may be incomplete. Use query parameters such as "limit" and "offset" ` +
+    `to page through results and retrieve a smaller, complete response.]`;
+  return text.substring(0, maxSize) + note;
+}
+
 // Create MCP server
 const server = new Server({
   name: "directus-api-extended",
@@ -570,11 +601,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           { headers: buildHeaders(token) }
         );
         
+        // Strip the verbose per-column `schema` field – it can be enormous for
+        // system collections and is rarely needed by an AI assistant.
+        const collections = Array.isArray(response.data?.data)
+          ? response.data.data.map((c: Record<string, unknown>) => {
+              const { schema: _schema, ...rest } = c;
+              return rest;
+            })
+          : response.data;
+        
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(collections)
             }
           ]
         };
@@ -583,7 +623,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "getItems": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
         const collection = toolArgs.collection as string;
-        const query = toolArgs.query as Record<string, any> | undefined;
+        // Apply a default limit so large collections don't flood the context window.
+        const query = { limit: 50, ...(toolArgs.query as Record<string, unknown> | undefined) };
         
         const response = await axios.get(
           `${url}/items/${collection}`, 
@@ -597,7 +638,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
@@ -621,7 +662,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
@@ -642,7 +683,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
@@ -664,7 +705,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
@@ -703,7 +744,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
@@ -711,7 +752,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "getActivity": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
-        const query = toolArgs.query as Record<string, any> | undefined;
+        // Apply a default limit so the activity log doesn't flood the context window.
+        const query = { limit: 50, ...(toolArgs.query as Record<string, unknown> | undefined) };
         
         const response = await axios.get(
           `${url}/activity`,
@@ -725,7 +767,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
@@ -744,7 +786,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
@@ -768,7 +810,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
@@ -776,7 +818,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "getFiles": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
-        const query = toolArgs.query as Record<string, any> | undefined;
+        // Apply a default limit to keep the response size manageable.
+        const query = { limit: 50, ...(toolArgs.query as Record<string, unknown> | undefined) };
         
         const response = await axios.get(
           `${url}/files`,
@@ -790,7 +833,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
@@ -849,7 +892,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
@@ -857,7 +900,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "getUsers": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
-        const query = toolArgs.query as Record<string, any> | undefined;
+        // Apply a default limit to keep the response size manageable.
+        const query = { limit: 50, ...(toolArgs.query as Record<string, unknown> | undefined) };
         
         const response = await axios.get(
           `${url}/users`,
@@ -871,7 +915,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
@@ -889,7 +933,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
@@ -897,7 +941,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "getRoles": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
-        const query = toolArgs.query as Record<string, any> | undefined;
+        // Apply a default limit to keep the response size manageable.
+        const query = { limit: 50, ...(toolArgs.query as Record<string, unknown> | undefined) };
         
         const response = await axios.get(
           `${url}/roles`,
@@ -911,7 +956,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
@@ -919,7 +964,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "getPermissions": {
         const token = toolArgs.token || CONFIG.DIRECTUS_ACCESS_TOKEN;
-        const query = toolArgs.query as Record<string, any> | undefined;
+        // Apply a default limit to keep the response size manageable.
+        const query = { limit: 50, ...(toolArgs.query as Record<string, unknown> | undefined) };
         
         const response = await axios.get(
           `${url}/permissions`,
@@ -933,7 +979,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: JSON.stringify(response.data, null, 2)
+              text: truncateResponse(response.data)
             }
           ]
         };
