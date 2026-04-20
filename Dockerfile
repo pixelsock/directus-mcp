@@ -23,7 +23,8 @@ COPY . .
 # Build the project (TypeScript to JavaScript)
 RUN npm run build
 
-# Expose necessary port if needed (MCP typically uses stdio, so no port exposed)
+# Expose HTTP port (used when MCP_TRANSPORT=http)
+EXPOSE 3000
 
 # Set the default command for the container
 CMD ["node", "dist/index.js"]

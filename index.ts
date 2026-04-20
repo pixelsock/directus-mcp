@@ -1,9 +1,12 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { 
   CallToolRequestSchema, 
   ListToolsRequestSchema 
 } from "@modelcontextprotocol/sdk/types.js";
+import { createServer } from "node:http";
+import { randomUUID } from "node:crypto";
 import axios from "axios";
 
 /**
@@ -35,6 +38,9 @@ if (process.env.DIRECTUS_PASSWORD) {
   CONFIG.DIRECTUS_PASSWORD = process.env.DIRECTUS_PASSWORD;
 }
 
+// Transport mode: 'stdio' (default) or 'http'/'streamable-http'
+let transportMode = process.env.MCP_TRANSPORT || 'stdio';
+
 // Parse server arguments if provided
 const serverArgs = process.argv.slice(2);
 serverArgs.forEach(arg => {
@@ -46,6 +52,8 @@ serverArgs.forEach(arg => {
     CONFIG.DIRECTUS_EMAIL = arg.split('=')[1];
   } else if (arg.startsWith('--directus-password=')) {
     CONFIG.DIRECTUS_PASSWORD = arg.split('=')[1];
+  } else if (arg.startsWith('--transport=')) {
+    transportMode = arg.split('=')[1];
   }
 });
 
@@ -960,5 +968,36 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 
 // Server startup
-const transport = new StdioServerTransport();
-server.connect(transport);
+// Both 'http' and 'streamable-http' are accepted as aliases for the Streamable HTTP transport.
+if (transportMode === 'http' || transportMode === 'streamable-http') {
+  // HTTP (Streamable HTTP) transport — suitable for multi-user / remote deployments
+  const port = parseInt(process.env.MCP_PORT || '3000', 10);
+  const host = process.env.MCP_HOST || '127.0.0.1';
+
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: () => randomUUID(),
+  });
+
+  await server.connect(transport);
+
+  const httpServer = createServer(async (req, res) => {
+    try {
+      await transport.handleRequest(req, res);
+    } catch (err: any) {
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error', message: err?.message ?? String(err) }));
+      }
+    }
+  });
+
+  httpServer.listen(port, host, () => {
+    console.error(`Directus MCP server running in HTTP mode`);
+    console.error(`Listening on http://${host}:${port}`);
+    console.error(`Set your MCP client URL to: http://${host}:${port}/mcp`);
+  });
+} else {
+  // Default: stdio transport (single-user / local AI editor usage)
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+}

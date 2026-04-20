@@ -172,6 +172,63 @@ If you want to run the server in development mode:
    npm run dev
    ```
 
+## 🌐 HTTP transport (multi-user / remote deployments)
+
+By default the server uses the `stdio` transport, which is ideal for single-user local AI editors (Cursor, Claude Desktop, etc.).
+
+For **multi-user** or **remote** environments you can switch to the [Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http) by setting the `MCP_TRANSPORT` environment variable.
+
+### Configuration
+
+| Environment variable | Default       | Description                                              |
+| -------------------- | ------------- | -------------------------------------------------------- |
+| `MCP_TRANSPORT`      | `stdio`       | Transport mode: `stdio` or `http` / `streamable-http`   |
+| `MCP_PORT`           | `3000`        | TCP port the HTTP server listens on                      |
+| `MCP_HOST`           | `127.0.0.1`   | Host/interface to bind. Use `0.0.0.0` to bind all interfaces |
+
+You can also pass `--transport=http` as a CLI argument instead of setting the environment variable.
+
+### Running the HTTP server
+
+```shell
+# Via environment variable
+MCP_TRANSPORT=http MCP_PORT=3000 MCP_HOST=0.0.0.0 node dist/index.js
+
+# Via CLI argument
+node dist/index.js --transport=http
+```
+
+### Docker example
+
+```shell
+docker run -p 3000:3000 \
+  -e DIRECTUS_URL=https://your-directus-instance.com \
+  -e DIRECTUS_ACCESS_TOKEN=your_token_here \
+  -e MCP_TRANSPORT=http \
+  -e MCP_HOST=0.0.0.0 \
+  ghcr.io/pixelsock/directus-mcp
+```
+
+### Connecting an MCP client to the HTTP server
+
+Once the server is running, configure your MCP client to connect to:
+
+```
+http://<host>:<port>/mcp
+```
+
+For example with a client that supports the Streamable HTTP transport:
+
+```json
+{
+  "mcpServers": {
+    "directus": {
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
 ## 📄 Directus Developer resources
 
 - [Directus API Documentation](https://docs.directus.io/reference/introduction.html)
