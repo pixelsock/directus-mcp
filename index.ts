@@ -51,7 +51,7 @@ serverArgs.forEach(arg => {
 
 // Create MCP server
 const server = new Server({
-  name: "directus-api-extended",
+  name: "directus-mcp",
   version: "1.0.0"
 }, {
   capabilities: {

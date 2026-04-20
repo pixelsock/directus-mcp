@@ -1,31 +1,35 @@
 {
-  "name": "directus-api-extended",
+  "name": "@pixelsock/directus-mcp",
   "version": "1.0.0",
-  "description": "Extended MCP server for Directus API",
+  "description": "MCP server for Directus API — enables AI clients to interact with Directus CMS via Model Context Protocol",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "directus-api-extended": "dist/index.js"
+    "directus-mcp": "dist/index.js"
   },
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "concurrently --names \"tsc:watch,inspector:watch\" \"npm run tsc:watch\" \"npm run inspector:watch\"",
     "build": "npm run tsc",
     "tsc": "tsc",
     "tsc:watch": "tsc --watch",
     "inspector": "npx @modelcontextprotocol/inspector -- nodemon --env-file=.env -q dist/index.js",
-    "inspector:watch": "npx @modelcontextprotocol/inspector -- nodemon --env-file=.env -q --watch dist dist/index.js"
+    "inspector:watch": "npx @modelcontextprotocol/inspector -- nodemon --env-file=.env -q --watch dist dist/index.js",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.8.0",
-    "axios": "^1.6.7",
-    "form-data": "^4.0.0",
+    "axios": "^1.15.0",
+    "form-data": "^4.0.4",
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@modelcontextprotocol/inspector": "^0.10.2",
+    "@modelcontextprotocol/inspector": "^0.16.6",
     "@types/node": "^20.11.19",
     "concurrently": "^9.1.2",
     "nodemon": "^3.1.9",
