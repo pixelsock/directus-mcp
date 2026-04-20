@@ -50,14 +50,23 @@ serverArgs.forEach(arg => {
 });
 
 // Maximum number of characters allowed in a single tool response.
-// Keeping responses below this threshold prevents Claude's context window
-// from being exhausted by large Directus payloads (e.g. full collection schemas).
+// Claude's context window is roughly 200 000 tokens (~800 000 chars).
+// A single large Directus response (e.g. full collection schemas) can easily
+// exceed 100 000 chars and fill most of the context after only one tool call,
+// causing subsequent questions to fail with "maximum length reached".
+// 50 000 chars (~12 500 tokens) leaves ample room for conversation history
+// and multiple tool exchanges while still conveying meaningful data.
 const MAX_RESPONSE_SIZE = 50000;
 
 /**
  * Serialise `data` to pretty-printed JSON and, when the result exceeds
  * MAX_RESPONSE_SIZE, truncate it and append a short guidance note so the
  * caller knows how to retrieve the rest of the data.
+ *
+ * NOTE: Truncation happens at a character boundary, so the returned string
+ * may not be valid JSON when the limit is reached. It is intentionally
+ * returned as plain text so the AI assistant can still read the visible
+ * portion and understand it needs to narrow its query.
  */
 function truncateResponse(data: unknown, maxSize: number = MAX_RESPONSE_SIZE): string {
   const text = JSON.stringify(data, null, 2);
@@ -66,7 +75,8 @@ function truncateResponse(data: unknown, maxSize: number = MAX_RESPONSE_SIZE): s
   }
   const note =
     `\n\n... [Response truncated: ${text.length} chars total, showing first ${maxSize}. ` +
-    `Use query parameters such as "limit" and "offset" to page through results.]`;
+    `NOTE: The JSON above may be incomplete. Use query parameters such as "limit" and "offset" ` +
+    `to page through results and retrieve a smaller, complete response.]`;
   return text.substring(0, maxSize) + note;
 }
 
