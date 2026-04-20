@@ -968,6 +968,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 
 // Server startup
+// Both 'http' and 'streamable-http' are accepted as aliases for the Streamable HTTP transport.
 if (transportMode === 'http' || transportMode === 'streamable-http') {
   // HTTP (Streamable HTTP) transport — suitable for multi-user / remote deployments
   const port = parseInt(process.env.MCP_PORT || '3000', 10);
@@ -980,7 +981,14 @@ if (transportMode === 'http' || transportMode === 'streamable-http') {
   await server.connect(transport);
 
   const httpServer = createServer(async (req, res) => {
-    await transport.handleRequest(req, res);
+    try {
+      await transport.handleRequest(req, res);
+    } catch (err: any) {
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error', message: err?.message ?? String(err) }));
+      }
+    }
   });
 
   httpServer.listen(port, host, () => {
